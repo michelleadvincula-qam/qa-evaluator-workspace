@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shortlist Log Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-card: #ffffff;
+            --accent-primary: #10b981;
+            --accent-secondary: #059669;
+            --accent-tertiary: #34d399;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-light: #94a3b8;
+            --border: #e2e8f0;
+            --shadow: rgba(0, 0, 0, 0.05);
+            --shadow-lg: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            background-image: 
+                linear-gradient(to bottom, rgba(16, 185, 129, 0.03) 0%, transparent 100%);
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .header-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.03em;
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .google-sheets-setup {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-left: 4px solid var(--accent-primary);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px var(--shadow);
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        .setup-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .setup-icon {
+            font-size: 1.5rem;
+        }
+
+        .setup-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .setup-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+
+        .url-input {
+            width: 100%;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.875rem;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+
+        .form-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 16px var(--shadow-lg);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .required {
+            color: #ef4444;
+            font-size: 1.125rem;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="datetime-local"],
+        input[type="url"],
+        select,
+        textarea {
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 1rem;
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="datetime-local"]:focus,
+        input[type="url"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+            background: var(--bg-secondary);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: 'IBM Plex Sans', sans-serif;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%23475569' d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        button {
+            flex: 1;
+            font-family: 'IBM Plex Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: var(--bg-secondary);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            min-width: 300px;
+            padding: 16px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.4s ease-out;
+            z-index: 1000;
+            border-left: 4px solid;
+        }
+
+        .notification.success {
+            border-left-color: var(--accent-primary);
+        }
+
+        .notification.error {
+            border-left-color: #ef4444;
+        }
+
+        .notification-icon {
+            font-size: 1.5rem;
+        }
+
+        .notification-content {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin-bottom: 2px;
+        }
+
+        .notification-message {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .stats-bar {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 32px;
+            display: flex;
+            justify-content: space-around;
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .form-card {
+                padding: 28px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .stats-bar {
+                flex-direction: column;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-icon">⭐</div>
+            <h1>Shortlist Log Tracker</h1>
+            <p class="subtitle">Track and manage your shortlisted candidates</p>
+        </header>
+
+        <div class="google-sheets-setup">
+            <div class="setup-header">
+                <span class="setup-icon">🔗</span>
+                <h2 class="setup-title">Connect to Google Sheets</h2>
+            </div>
+            <div class="setup-content">
+                Deploy the provided Apps Script to your Google Sheet, then paste the webhook URL below to start tracking automatically.
+            </div>
+            <input 
+                type="url" 
+                id="webhookUrl" 
+                class="url-input"
+                placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"
+                value="">
+        </div>
+
+        <form id="shortlistForm">
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>
+                            Candidate Name
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="candidateName" 
+                            placeholder="Enter candidate full name"
+                            required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                Shortlist Date
+                                <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="date" 
+                                id="shortlistDate" 
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Shortlist Timestamp</label>
+                            <input 
+                                type="datetime-local" 
+                                id="shortlistTimestamp">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Profile Summary Link</label>
+                        <input 
+                            type="url" 
+                            id="profileLink" 
+                            placeholder="https://example.com/profile">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                Client
+                                <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="client" 
+                                placeholder="Client company name"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>
+                                Client POC
+                                <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="clientPoc" 
+                                placeholder="Point of contact name"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Position/Role
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="position" 
+                            placeholder="Job title or position"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Status
+                            <span class="required">*</span>
+                        </label>
+                        <select id="status" required>
+                            <option value="">Select status</option>
+                            <option value="Shortlisted">⭐ Shortlisted</option>
+                            <option value="Interview Scheduled">📅 Interview Scheduled</option>
+                            <option value="First Interview">🎯 First Interview</option>
+                            <option value="Second Interview">🎯🎯 Second Interview</option>
+                            <option value="Final Interview">🏁 Final Interview</option>
+                            <option value="Offer Discussion">💬 Offer Discussion</option>
+                            <option value="Offer Extended">🎉 Offer Extended</option>
+                            <option value="Accepted">✅ Accepted</option>
+                            <option value="Declined">❌ Declined</option>
+                            <option value="On Hold">⏸️ On Hold</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea 
+                            id="notes" 
+                            placeholder="Additional notes, observations, or feedback about the candidate..."></textarea>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn-primary">
+                        <span>⭐</span>
+                        Log Shortlist
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="resetForm()">
+                        <span>🔄</span>
+                        Clear Form
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value" id="totalShortlists">0</div>
+                <div class="stat-label">Total Shortlisted</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="thisMonth">0</div>
+                <div class="stat-label">This Month</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="thisWeek">0</div>
+                <div class="stat-label">This Week</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set today's date as default
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('shortlistDate').value = today;
+        
+        // Set current date and time for shortlist timestamp
+        const now = new Date();
+        const datetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        document.getElementById('shortlistTimestamp').value = datetime;
+
+        // Load webhook URL from localStorage
+        const webhookInput = document.getElementById('webhookUrl');
+        const savedUrl = localStorage.getItem('shortlistWebhookUrl');
+        if (savedUrl) {
+            webhookInput.value = savedUrl;
+        }
+
+        webhookInput.addEventListener('change', function() {
+            localStorage.setItem('shortlistWebhookUrl', this.value);
+        });
+
+        // Load stats from localStorage
+        function loadStats() {
+            const stats = JSON.parse(localStorage.getItem('shortlistStats') || '{"total": 0, "month": 0, "week": 0}');
+            document.getElementById('totalShortlists').textContent = stats.total;
+            document.getElementById('thisMonth').textContent = stats.month;
+            document.getElementById('thisWeek').textContent = stats.week;
+        }
+
+        function updateStats() {
+            const stats = JSON.parse(localStorage.getItem('shortlistStats') || '{"total": 0, "month": 0, "week": 0, "lastMonth": "", "lastWeek": ""}');
+            
+            const now = new Date();
+            const currentMonth = now.getMonth() + '-' + now.getFullYear();
+            const currentWeek = getWeekNumber(now);
+
+            // Reset month counter if new month
+            if (stats.lastMonth !== currentMonth) {
+                stats.month = 0;
+                stats.lastMonth = currentMonth;
+            }
+
+            // Reset week counter if new week
+            if (stats.lastWeek !== currentWeek) {
+                stats.week = 0;
+                stats.lastWeek = currentWeek;
+            }
+
+            stats.total++;
+            stats.month++;
+            stats.week++;
+
+            localStorage.setItem('shortlistStats', JSON.stringify(stats));
+            loadStats();
+        }
+
+        function getWeekNumber(date) {
+            const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+            const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+            return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7) + '-' + date.getFullYear();
+        }
+
+        loadStats();
+
+        // Show notification
+        function showNotification(title, message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <span class="notification-icon">${type === 'success' ? '✅' : '❌'}</span>
+                <div class="notification-content">
+                    <div class="notification-title">${title}</div>
+                    <div class="notification-message">${message}</div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.4s ease-out reverse';
+                setTimeout(() => notification.remove(), 400);
+            }, 4000);
+        }
+
+        // Handle form submission
+        document.getElementById('shortlistForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const webhookUrl = document.getElementById('webhookUrl').value.trim();
+            
+            if (!webhookUrl) {
+                showNotification('Setup Required', 'Please enter your Google Apps Script URL first', 'error');
+                return;
+            }
+
+            const formData = {
+                timestamp: new Date().toISOString(),
+                candidate_name: document.getElementById('candidateName').value,
+                shortlist_date: document.getElementById('shortlistDate').value,
+                shortlist_timestamp: document.getElementById('shortlistTimestamp').value,
+                profile_link: document.getElementById('profileLink').value,
+                client: document.getElementById('client').value,
+                client_poc: document.getElementById('clientPoc').value,
+                position: document.getElementById('position').value,
+                status: document.getElementById('status').value,
+                notes: document.getElementById('notes').value
+            };
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                showNotification('Success!', 'Shortlist logged successfully to Google Sheets', 'success');
+                updateStats();
+                
+                // Reset form after successful submission
+                setTimeout(() => {
+                    resetForm(false);
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Error', 'Failed to submit. Please check your webhook URL.', 'error');
+            }
+        });
+
+        // Reset form function
+        function resetForm(showMessage = true) {
+            document.getElementById('shortlistForm').reset();
+            document.getElementById('shortlistDate').value = today;
+            
+            // Reset timestamp to current datetime
+            const now = new Date();
+            const datetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('shortlistTimestamp').value = datetime;
+            
+            if (showMessage) {
+                showNotification('Form Cleared', 'Ready for next shortlist entry', 'success');
+            }
+        }
+    </script>
+</body>
+</html>
